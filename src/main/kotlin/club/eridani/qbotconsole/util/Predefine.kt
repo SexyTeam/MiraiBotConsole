@@ -11,14 +11,28 @@ repositories {
     jcenter()
     maven("https://dl.bintray.com/eridani/maven")
 }
+//想要copy 一个库 到 libs
+//只需要将平时的 implementation("blablabla:blablabl:blablab") 的 implementation 改成 copyLib
+val copyLib by configurations.creating
+
+configurations {
+    implementation.get().extendsFrom(copyLib)
+}
 
 dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(kotlin("script-runtime"))
+
+    fileTree("libs") {
+        forEach {
+            implementation(files(it))
+        }
+    }
+
+    compileOnly(kotlin("stdlib"))
+    compileOnly(kotlin("script-runtime"))
     val miraiVersion = "2.3.2" // 替换为你需要的版本号
     api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
     runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
-    implementation("club.eridani:qbotconsole:$VERSION")
+    compileOnly("club.eridani:qbotconsole:$VERSION")
 }
 
 sourceSets {
@@ -29,8 +43,8 @@ sourceSets {
     }
 }
 
-tasks.create<Copy>("downloadLibs") {
-    from(configurations.default)
+tasks.create<Copy>("copyLibs") {
+    from(copyLib)
     into("libs")
 }
 
