@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "club.eridani"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
@@ -98,7 +98,7 @@ tasks {
     }
 }
 
-tasks.withType<Jar> {
+val fatJar = tasks.create<Jar>("fat-jar") {
     from(shade.map {if (it.isDirectory) it else zipTree(it)})
     exclude("**/*.RSA")
     exclude("**/*.SF")

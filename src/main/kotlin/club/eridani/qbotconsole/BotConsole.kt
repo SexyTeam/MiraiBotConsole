@@ -23,7 +23,7 @@ import java.io.File
  */
 lateinit var GLOBAL_CONSOLE: BotConsole
 
-const val VERSION = "1.0.2"
+const val VERSION = "1.0.3"
 
 class BotConsole(val workspacePath: File, val gui: MainView) {
     val bots = mutableListOf<Bot>().asObservable()
