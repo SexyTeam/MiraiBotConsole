@@ -18,6 +18,9 @@ script("test") {
                 }
 
                 groups {
+                    groupFilter { it.members.contains(1962226235) }
+
+
                     +"a" {
                         reply("a")
                     }

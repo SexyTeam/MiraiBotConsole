@@ -5,6 +5,7 @@ import club.eridani.qbotconsole.qqcommand.QCommandHandler
 import club.eridani.qbotconsole.util.toVarList
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.event.Listener
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -15,6 +16,7 @@ import net.mamoe.mirai.message.data.toMessageChain
 
 class GroupCommandHandler(bot: Bot, name: String, val scope: CommandWorkingScope, handler: suspend GroupCommandExecutor.() -> Unit) :
     QCommandHandler<GroupMessageEvent, GroupCommandHandler, GroupCommandExecutor>(bot, name, handler) {
+    var groupFilter : (Group) -> Boolean = { true }
     open var noPermission : MessageChain = PlainText("你没有权限").toMessageChain()
     override var listener: Listener<GroupMessageEvent> = bot
         .eventChannel
