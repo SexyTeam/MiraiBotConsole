@@ -70,23 +70,38 @@ class GroupCommandHandler(bot: Bot, name: String, val scope: CommandWorkingScope
     }
 }
 
-class GroupCommandExecutor(event: GroupMessageEvent, args: List<SingleMessage>, commandInstance: GroupCommandHandler) :
-    QCommandExecutor<GroupMessageEvent, GroupCommandHandler, GroupCommandExecutor>(event, args, commandInstance) {
+fun groupCommand(name: String, bot: Bot, scope: CommandWorkingScope,  handler: suspend GroupCommandExecutor.() -> Unit) =
+    GroupCommandHandler(bot, name, scope , handler)
+
+class GroupCommandExecutor(event: GroupMessageEvent, args: List<SingleMessage>, commandInstance: club.eridani.qbotconsole.qqcommand.group.GroupCommandHandler) :
+    QCommandExecutor<GroupMessageEvent, club.eridani.qbotconsole.qqcommand.group.GroupCommandHandler, GroupCommandExecutor>(event, args, commandInstance) {
     override fun subCommand(command: String, block: suspend GroupCommandExecutor.() -> Unit) {
-        commandInstance.subCommands += GroupCommandHandler(commandInstance.bot, command, commandInstance.scope, block)
+        commandInstance.subCommands += club.eridani.qbotconsole.qqcommand.group.GroupCommandHandler(
+            commandInstance.bot,
+            command,
+            commandInstance.scope,
+            block
+        )
     }
 
     override fun noArgRunner(block: suspend GroupCommandExecutor.() -> Unit) {
-        commandInstance.noArgRunner = GroupCommandHandler(commandInstance.bot, "help",commandInstance.scope, block)
+        commandInstance.noArgRunner = club.eridani.qbotconsole.qqcommand.group.GroupCommandHandler(
+            commandInstance.bot,
+            "help",
+            commandInstance.scope,
+            block
+        )
     }
 
     override fun noCommandFind(block: suspend GroupCommandExecutor.() -> Unit) {
-        commandInstance.noCommandFoundRunner = GroupCommandHandler(commandInstance.bot, "help", commandInstance.scope, block)
+        commandInstance.noCommandFoundRunner = club.eridani.qbotconsole.qqcommand.group.GroupCommandHandler(
+            commandInstance.bot,
+            "help",
+            commandInstance.scope,
+            block
+        )
     }
 }
-
-fun groupCommand(name: String, bot: Bot, scope: CommandWorkingScope,  handler: suspend GroupCommandExecutor.() -> Unit) =
-    GroupCommandHandler(bot, name, scope , handler)
 
 enum class CommandWorkingScope(val compareFunc: (Member) -> Boolean) {
     EVERYONE({ true }) { override val type = this } ,

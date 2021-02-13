@@ -36,15 +36,6 @@ class BotGui : App(MainView::class, MyStylesheet::class) {
     }
 }
 
-class MyStylesheet : Stylesheet() {
-    init {
-        root {
-            font = Font("Noto Sans CJK SC Regular", 9.5)
-        }
-    }
-}
-
-
 class MainView : View("Bot") {
     override val root = borderpane()
 
@@ -251,3 +242,13 @@ class MainView : View("Bot") {
     }
 
 }
+
+class MyStylesheet : Stylesheet() {
+    init {
+        root {
+            font = Font("Noto Sans CJK SC Regular", 9.5)
+        }
+    }
+}
+
+
