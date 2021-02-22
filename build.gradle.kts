@@ -41,7 +41,7 @@ dependencies {
     shade("no.tornado:tornadofx:1.7.20")
     shade("org.jfxtras:jmetro:8.6.5")
     shade("org.controlsfx:controlsfx:8.40.18")
-    shade("com.charleskorn.kaml:kaml:0.26.0")
+    shade("com.charleskorn.kaml:kaml:0.27.0")
     shade("no.tornado:tornadofx-controlsfx:0.1.1")
     val kotlinVersion = "1.4.30"
     shade(kotlin("reflect"))

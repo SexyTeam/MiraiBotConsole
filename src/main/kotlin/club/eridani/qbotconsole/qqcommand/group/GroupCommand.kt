@@ -14,10 +14,15 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.SingleMessage
 import net.mamoe.mirai.message.data.toMessageChain
 
-class GroupCommandHandler(bot: Bot, name: String, val scope: CommandWorkingScope, handler: suspend GroupCommandExecutor.() -> Unit) :
+class GroupCommandHandler(
+    bot: Bot,
+    name: String,
+    val scope: CommandWorkingScope,
+    handler: suspend GroupCommandExecutor.() -> Unit,
+) :
     QCommandHandler<GroupMessageEvent, GroupCommandHandler, GroupCommandExecutor>(bot, name, handler) {
-    var groupFilter : (Group) -> Boolean = { true }
-    open var noPermission : MessageChain = PlainText("你没有权限").toMessageChain()
+    var groupFilter: (Group) -> Boolean = { true }
+    open var noPermission: MessageChain = PlainText("你没有权限").toMessageChain()
     override var listener: Listener<GroupMessageEvent> = bot
         .eventChannel
         .subscribeAlways {
@@ -47,7 +52,9 @@ class GroupCommandHandler(bot: Bot, name: String, val scope: CommandWorkingScope
             if (subCommands.isEmpty()) {
                 noArgRunner?.execute(e, args.toMutableList().apply { runCatching { removeAt(0) } })
             } else {
-                noCommandFoundRunner = noCommandFoundRunner ?: GroupCommandHandler(bot,"help", scope) { reply("可用指令列表\n${subCommands.joinToString(", ") { it.command }}") }
+                noCommandFoundRunner = noCommandFoundRunner ?: GroupCommandHandler(bot,
+                    "help",
+                    scope) { reply("可用指令列表\n${subCommands.joinToString(", ") { it.command }}") }
                 noCommandFoundRunner?.execute(e, args.toMutableList().apply { runCatching { removeAt(0) } })
             }
         } else {
@@ -55,7 +62,9 @@ class GroupCommandHandler(bot: Bot, name: String, val scope: CommandWorkingScope
                 .filter { args[0].contentEquals(it.command, true) }
                 .apply {
                     if (this.isEmpty()) {
-                        noCommandFoundRunner = noCommandFoundRunner ?: GroupCommandHandler(bot, "help", scope) { reply("没有找到当前指令, 指令列表\n${subCommands.joinToString(", ") { it.command }}") }
+                        noCommandFoundRunner = noCommandFoundRunner ?: GroupCommandHandler(bot,
+                            "help",
+                            scope) { reply("没有找到当前指令, 指令列表\n${subCommands.joinToString(", ") { it.command }}") }
                         noCommandFoundRunner?.execute(e, args.toMutableList().apply { runCatching { removeAt(0) } })
                     } else {
                         forEach {
@@ -77,25 +86,49 @@ class GroupCommandExecutor(event: GroupMessageEvent, args: List<SingleMessage>, 
     }
 
     override fun noArgRunner(block: suspend GroupCommandExecutor.() -> Unit) {
-        commandInstance.noArgRunner = GroupCommandHandler(commandInstance.bot, "help",commandInstance.scope, block)
+        commandInstance.noArgRunner = GroupCommandHandler(commandInstance.bot, "help", commandInstance.scope, block)
     }
 
     override fun noCommandFind(block: suspend GroupCommandExecutor.() -> Unit) {
-        commandInstance.noCommandFoundRunner = GroupCommandHandler(commandInstance.bot, "help", commandInstance.scope, block)
+        commandInstance.noCommandFoundRunner =
+            GroupCommandHandler(commandInstance.bot, "help", commandInstance.scope, block)
     }
+
+    fun member(index: Int): Member? {
+        val asLong = long(index)
+        val rawArg = args.getOrNull(index)
+        if (rawArg is Member?) return rawArg
+        asLong ?: return null
+        return e.group[asLong]
+    }
+
 }
 
-fun groupCommand(name: String, bot: Bot, scope: CommandWorkingScope,  handler: suspend GroupCommandExecutor.() -> Unit) =
-    GroupCommandHandler(bot, name, scope , handler)
+fun groupCommand(name: String, bot: Bot, scope: CommandWorkingScope, handler: suspend GroupCommandExecutor.() -> Unit) =
+    GroupCommandHandler(bot, name, scope, handler)
 
 enum class CommandWorkingScope(val compareFunc: (Member) -> Boolean) {
-    EVERYONE({ true }) { override val type = this } ,
-    MEMBER_ONLY({ it.permission == net.mamoe.mirai.contact.MemberPermission.MEMBER }) { override val type = this },
-    ADMIN_ONLY( { it.permission == net.mamoe.mirai.contact.MemberPermission.ADMINISTRATOR } ) { override val type = this },
-    OWNER_ONLY( {it.permission == net.mamoe.mirai.contact.MemberPermission.OWNER} ) { override val type = this },
-    MEMBER_AND_OWNER({ (it.permission == net.mamoe.mirai.contact.MemberPermission.MEMBER) or (it.permission == net.mamoe.mirai.contact.MemberPermission.OWNER) }) { override val type = this },
-    MEMBER_AND_ADMINISTRATOR({ (it.permission == net.mamoe.mirai.contact.MemberPermission.MEMBER) or (it.permission == net.mamoe.mirai.contact.MemberPermission.ADMINISTRATOR) }) { override val type = this },
-    ADMIN_AND_OWNER({ (it.permission == net.mamoe.mirai.contact.MemberPermission.ADMINISTRATOR) or (it.permission == net.mamoe.mirai.contact.MemberPermission.OWNER) }) { override val type = this };
+    EVERYONE({ true }) {
+        override val type = this
+    },
+    MEMBER_ONLY({ it.permission == net.mamoe.mirai.contact.MemberPermission.MEMBER }) {
+        override val type = this
+    },
+    ADMIN_ONLY({ it.permission == net.mamoe.mirai.contact.MemberPermission.ADMINISTRATOR }) {
+        override val type = this
+    },
+    OWNER_ONLY({ it.permission == net.mamoe.mirai.contact.MemberPermission.OWNER }) {
+        override val type = this
+    },
+    MEMBER_AND_OWNER({ (it.permission == net.mamoe.mirai.contact.MemberPermission.MEMBER) or (it.permission == net.mamoe.mirai.contact.MemberPermission.OWNER) }) {
+        override val type = this
+    },
+    MEMBER_AND_ADMINISTRATOR({ (it.permission == net.mamoe.mirai.contact.MemberPermission.MEMBER) or (it.permission == net.mamoe.mirai.contact.MemberPermission.ADMINISTRATOR) }) {
+        override val type = this
+    },
+    ADMIN_AND_OWNER({ (it.permission == net.mamoe.mirai.contact.MemberPermission.ADMINISTRATOR) or (it.permission == net.mamoe.mirai.contact.MemberPermission.OWNER) }) {
+        override val type = this
+    };
 
     open val type: CommandWorkingScope by lazy { EVERYONE }
     open fun command(bot: Bot, name: String, handler: suspend GroupCommandExecutor.() -> Unit): GroupCommandHandler {

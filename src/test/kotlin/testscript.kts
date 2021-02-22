@@ -1,5 +1,7 @@
 import club.eridani.qbotconsole.qqcommand.commands
 import club.eridani.qbotconsole.script.script
+import kotlinx.coroutines.launch
+import net.mamoe.mirai.message.data.toMessageChain
 
 script("test") {
     load {
@@ -12,36 +14,24 @@ script("test") {
 
     bots {
         commands {
-            "!" {
-                +"test" {
-                    reply("test")
-                }
-
+            "/" {
                 groups {
-                    groupFilter { it.members.contains(1962226235) }
-
-
-                    +"a" {
-                        reply("a")
-                    }
-
-                    +"b" {
-                        "a" {
-                            reply("ba")
+                    moderators {
+                        +"禁言" {
+                            member(0)?.mute(int(1) ?: 0)
                         }
 
-                        "b" {
-                            reply("bb")
+                        +"解禁言" {
+                            member(0)?.mute(0)
                         }
-                    }
 
-                    members {
-                        +"member" {
-                            reply("Hello Member")
+                        +"群发" {
+                            bot.groups.forEach {
+                                launch { it.sendMessage(args.toMessageChain()) }
+                            }
                         }
                     }
                 }
-
             }
         }
     }
